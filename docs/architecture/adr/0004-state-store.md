@@ -1,3 +1,17 @@
+---
+id: ADR-0004
+title: State Store
+status: Accepted
+version: '1.0'
+owner: Robert Hadaway
+reviewers:
+- Robert Hadaway
+depends_on: []
+references: []
+implemented_by: []
+last_updated: '2026-07-04'
+---
+
 # ADR-0004 — Shared State Store
 
 **Status:** Accepted  

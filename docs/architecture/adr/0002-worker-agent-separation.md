@@ -1,3 +1,17 @@
+---
+id: ADR-0002
+title: Worker Agent Separation
+status: Accepted
+version: '1.0'
+owner: Robert Hadaway
+reviewers:
+- Robert Hadaway
+depends_on: []
+references: []
+implemented_by: []
+last_updated: '2026-07-04'
+---
+
 # ADR-0002 — Worker / Agent Separation
 
 **Status:** Accepted  

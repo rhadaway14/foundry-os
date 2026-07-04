@@ -1,3 +1,17 @@
+---
+id: ARC-README
+title: Architecture README
+status: Draft
+version: '1.0'
+owner: Robert Hadaway
+reviewers:
+- Robert Hadaway
+depends_on: []
+references: []
+implemented_by: []
+last_updated: '2026-07-04'
+---
+
 # Foundry OS Architecture
 
 This directory contains the complete software architecture for Foundry OS.

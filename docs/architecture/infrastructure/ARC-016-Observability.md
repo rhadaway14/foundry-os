@@ -1,6 +1,6 @@
 ---
-id: ADR-0006
-title: Websocket First Ui
+id: ARC-016
+title: Observability
 status: Draft
 version: '1.0'
 owner: Robert Hadaway
