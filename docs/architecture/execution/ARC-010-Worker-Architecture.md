@@ -1,17 +1,3 @@
----
-id: ARC-010
-title: Worker Architecture
-status: Draft
-version: '1.0'
-owner: Robert Hadaway
-reviewers:
-- Robert Hadaway
-depends_on: []
-references: []
-implemented_by: []
-last_updated: '2026-07-04'
----
-
 # ARC-010 — Worker Architecture
 
 **Status:** Draft  

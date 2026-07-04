@@ -1,17 +1,3 @@
----
-id: ADR-0003
-title: Event Driven Core
-status: Accepted
-version: '1.0'
-owner: Robert Hadaway
-reviewers:
-- Robert Hadaway
-depends_on: []
-references: []
-implemented_by: []
-last_updated: '2026-07-04'
----
-
 # ADR-0003 — Event-Driven Core
 
 **Status:** Accepted  
