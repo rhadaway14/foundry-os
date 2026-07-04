@@ -1,142 +1,130 @@
-# ARC-009 — Worker Architecture
+# ARC-010 — Worker Architecture
 
 **Status:** Draft  
-**Version:** 1.0  
+**Version:** 2.0  
 **Owner:** Robert Hadaway
 
 ---
 
 # Purpose
 
-This document defines the Worker architecture used throughout Foundry OS.
+This document defines the Worker Architecture used throughout Foundry OS.
 
-Workers provide standardized integrations with external systems. They expose capabilities that can be safely invoked by the Orchestrator while remaining isolated from AI reasoning and business workflows.
+Workers are deterministic Capability Providers.
 
-Workers are deterministic software components. They communicate with external systems but never decide *what* work should be performed.
-
----
-
-# Design Principles
-
-Workers follow these principles:
-
-1. Single Responsibility
-2. Deterministic behavior
-3. Capability-based interface
-4. Stateless execution
-5. Structured responses
-6. Event emission
-7. Health reporting
-8. Security by default
-9. Replaceable implementations
-10. AI-independent
+Their purpose is to expose reliable, observable, and secure execution capabilities for external systems while remaining completely independent of AI reasoning.
 
 ---
 
-# What is a Worker?
+# Vision
 
-A Worker is an integration adapter that exposes one or more capabilities.
+Workers are the "device drivers" of Foundry OS.
 
-Examples include:
+Just as an operating system uses device drivers to communicate with hardware, Foundry OS uses Workers to communicate with external systems.
 
-- GitHub Worker
-- Docker Worker
-- System Worker
-- Runner Worker
-- Filesystem Worker
-- Shell Worker
-- Kubernetes Worker
-- Grafana Worker
-- Couchbase Worker
-- Notification Worker
+Workers never decide *what* should happen.
 
-Workers interact with external systems so that AI Agents never need to.
+They only execute approved capabilities.
 
 ---
 
-# Responsibilities
+# Worker Definition
+
+A Worker is a deterministic software component that provides one or more capabilities through a Capability Contract.
+
+Workers interact with:
+
+- GitHub
+- Docker
+- Kubernetes
+- Local Filesystems
+- Shells
+- Couchbase
+- Grafana
+- Prometheus
+- Azure DevOps
+- Slack
+- Jira
+
+Future Workers can support any external technology.
+
+---
+
+# Worker Characteristics
+
+Every Worker must be:
+
+- Deterministic
+- Stateless
+- Observable
+- Secure
+- Replaceable
+- Discoverable
+- Independently deployable
+- Independently testable
+
+---
+
+# Worker Responsibilities
 
 Workers are responsible for:
 
-- Communicating with external systems
-- Exposing named capabilities
-- Validating inputs
-- Returning structured outputs
-- Reporting health
+- Registering capabilities
+- Validating requests
+- Executing capabilities
+- Authenticating to external systems
+- Returning structured results
 - Publishing events
-- Enforcing capability permissions
-- Redacting secrets
-- Handling retries where appropriate
+- Reporting health
+- Respecting capability contracts
 
----
+Workers never:
 
-# Workers Do NOT
-
-Workers must never:
-
-- Make business decisions
-- Plan workflows
+- Make workflow decisions
 - Call LLMs
+- Plan work
+- Modify shared state directly
 - Call other Workers directly
-- Store workflow state
-- Bypass the Orchestrator
-- Ignore approval policies
-- Expose secrets
 
 ---
 
 # Worker Interface
 
-Every Worker implements a common interface.
+Every Worker implements a standard interface.
 
 ```python
 class Worker:
 
-    name: str
+    metadata()
 
-    version: str
+    initialize()
 
-    description: str
+    shutdown()
 
-    capabilities: list
+    register_capabilities()
 
-    def initialize(self):
+    health_check()
 
-    def shutdown(self):
-
-    def health_check(self):
-
-    def invoke(self, capability, request):
+    invoke()
 ```
 
 ---
 
-# Capability Model
+# Capability Registration
 
-Every Worker exposes one or more capabilities.
+During startup every Worker registers itself.
 
-A capability is the smallest executable unit offered by a Worker.
-
-Example:
-
-```json
-{
-  "name": "github.list_workflow_runs",
-  "description": "Returns recent GitHub Actions workflow runs.",
-  "risk": "low",
-  "approval_required": false,
-  "input_schema": {},
-  "output_schema": {}
-}
 ```
+Worker
 
-Capabilities become part of the Worker Registry.
+↓
 
----
+Capability Registry
 
-# Capability Discovery
+↓
 
-Workers register their capabilities during startup.
+Capabilities Available
+```
 
 Example:
 
@@ -145,129 +133,131 @@ GitHub Worker
 
 ↓
 
-Registers
-
-↓
-
 github.list_runs
-
-github.get_pr
 
 github.create_pr
 
 github.merge_pr
 
-↓
-
-Worker Registry
-```
-
-The Orchestrator queries the Worker Registry rather than individual Workers.
-
----
-
-# Worker Registry
-
-The Worker Registry maintains:
-
-- Registered Workers
-- Worker versions
-- Health status
-- Available capabilities
-- Capability metadata
-- Risk classifications
-
-Example:
-
-```
-Worker Registry
-
-GitHub Worker
-    list_runs
-    create_issue
-    create_pr
-
-Docker Worker
-    list_containers
-    restart_container
-
-System Worker
-    cpu_usage
-    memory_usage
+github.read_issue
 ```
 
 ---
 
-# Capability Risk Levels
+# Worker Metadata
 
-Each capability has a risk classification.
+Every Worker publishes:
 
-| Level | Description |
-|--------|-------------|
-| Low | Read-only operations |
-| Medium | Changes development state |
-| High | Changes infrastructure or repositories |
-| Critical | Destructive or irreversible actions |
-
-Examples
-
-| Capability | Risk |
-|------------|------|
-| github.list_runs | Low |
-| github.create_issue | Medium |
-| github.merge_pr | High |
-| docker.list_containers | Low |
-| docker.restart_container | High |
-| shell.execute | Critical |
+- Name
+- Version
+- Description
+- Provider Type
+- Supported Capabilities
+- Health Status
+- Dependencies
+- Authentication Methods
 
 ---
 
-# Approval Policy
+# Worker Health
 
-Workers declare whether a capability requires approval.
+Health includes:
 
-Examples
+```yaml
+status: Healthy
+
+latency: 18ms
+
+last_check: ...
+
+availability: 100%
+
+registered_capabilities: 14
+```
+
+---
+
+# Capability Execution
+
+Capability execution always follows the same lifecycle.
 
 ```
-github.list_runs
+Invoke
 
 ↓
 
-Approval
-
-No
-```
-
-```
-github.merge_pr
+Validate
 
 ↓
 
-Approval
+Authorize
 
-Yes
+↓
+
+Execute
+
+↓
+
+Publish Event
+
+↓
+
+Return Result
 ```
 
-Approval policies are enforced by the Orchestrator.
+Workers never skip validation.
 
-Workers do not decide whether approval is required.
+---
+
+# Security
+
+Workers must:
+
+- Validate every request
+- Authenticate every connection
+- Never expose secrets
+- Enforce least privilege
+- Respect approval policies
+- Produce audit events
+
+---
+
+# Error Model
+
+Workers return structured errors.
+
+Example
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "github.timeout",
+    "message": "GitHub API timeout"
+  }
+}
+```
+
+Implementation exceptions never escape the Worker boundary.
 
 ---
 
 # Worker Lifecycle
 
-Workers move through the following states:
-
 ```
-Registered
+Discovered
 
 ↓
 
-Initializing
+Initialized
 
 ↓
 
 Healthy
+
+↓
+
+Busy
 
 ↓
 
@@ -283,147 +273,78 @@ Disabled
 
 ↓
 
-Removed
+Retired
 ```
 
 ---
 
-# Health Model
+# Observability
 
-Each Worker periodically reports health.
+Workers publish:
 
-Example
+Events
 
-```json
-{
-  "status": "healthy",
-  "last_check": "...",
-  "latency_ms": 42,
-  "error_count": 0,
-  "capabilities_available": 12
-}
-```
+Metrics
 
----
+Logs
 
-# Worker Events
+Health
 
-Workers emit structured events.
+Capabilities
 
-Examples
+The platform should always know:
 
-```
-worker.registered
-
-worker.initialized
-
-worker.health.changed
-
-worker.capability.started
-
-worker.capability.completed
-
-worker.capability.failed
-```
+- What every Worker is doing
+- How healthy it is
+- Which capabilities are available
+- Which capabilities are failing
 
 ---
 
-# Error Model
-
-Workers return structured errors.
-
-Example
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "github.timeout",
-    "message": "GitHub API timeout."
-  }
-}
-```
-
-Workers never throw implementation-specific exceptions outside their boundary.
-
----
-
-# Security
-
-Workers must:
-
-- Validate all input
-- Redact secrets
-- Use least privilege
-- Authenticate with external systems
-- Log safely
-- Emit security events when appropriate
-
-Workers must never expose:
-
-- API tokens
-- SSH keys
-- Passwords
-- Environment variables
-- Private credentials
-
----
-
-# MVP Workers
+# Built-in Workers
 
 The MVP includes:
 
 - GitHub Worker
 - Docker Worker
-- Runner Worker
 - System Worker
+- Runner Worker
 
----
-
-# Future Workers
-
-Future releases may include:
+Phase 2 adds:
 
 - Filesystem Worker
 - Shell Worker
 - Kubernetes Worker
-- Grafana Worker
 - Couchbase Worker
-- Redis Worker
-- Azure DevOps Worker
-- Jira Worker
-- Slack Worker
-- Email Worker
+- Grafana Worker
 - Notification Worker
-- GitLab Worker
-- Terraform Worker
 
 ---
 
 # Design Rules
 
 1. Workers are deterministic.
-2. Workers expose capabilities.
+2. Workers provide capabilities.
 3. Workers never reason.
-4. Workers never call other Workers.
-5. Workers never own workflow state.
-6. Workers emit events.
-7. Workers report health.
+4. Workers never plan.
+5. Workers never call other Workers.
+6. Workers never own shared state.
+7. Workers emit events.
 8. Workers are replaceable.
-9. Workers communicate only through the Orchestrator.
-10. Every capability must be discoverable through the Worker Registry.
+9. Workers register capabilities.
+10. Workers implement Capability Contracts.
+11. Workers are independently testable.
+12. Workers may be deployed locally or remotely.
 
 ---
 
-# Future Considerations
+# Relationship to Other Architecture Documents
 
-Future versions may support:
-
-- Remote Workers
-- Worker containers
-- Distributed Worker clusters
-- Capability load balancing
-- Capability versioning
-- Worker sandboxing
-- Marketplace-installed Workers
-- Dynamic capability discovery
+| Document | Relationship |
+|----------|--------------|
+| ARC-008 | Orchestrator invokes Worker capabilities |
+| ARC-009 | Workers register Capability Contracts |
+| ARC-011 | AI Agents consume Worker capabilities |
+| ARC-006 | Workers emit Events |
+| ARC-007 | Worker events update State |
+| ARC-012 | Plugins may contribute Workers |
