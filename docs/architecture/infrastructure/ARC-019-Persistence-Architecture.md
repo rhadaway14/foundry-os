@@ -1,6 +1,6 @@
 ---
-id: ADR-0006
-title: Websocket First Ui
+id: ARC-019
+title: Persistence Architecture
 status: Draft
 version: '1.0'
 owner: Robert Hadaway
