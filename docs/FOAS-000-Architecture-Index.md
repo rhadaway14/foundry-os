@@ -102,6 +102,7 @@ Possible states:
 | ARC-012 | Workflow Engine | Draft |
 | ARC-013 | Runtime Execution Model | Draft |
 | ARC-020 | Plugin Architecture | Planned |
+| ARC-028 | Adaptive Capability Evolution | Draft |
 | ARC-021 | Security Architecture | Planned |
 | ARC-022 | Persistence Architecture | Planned |
 | ARC-023 | Configuration Architecture | Planned |
